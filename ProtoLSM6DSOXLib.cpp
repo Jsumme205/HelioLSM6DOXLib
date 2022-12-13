@@ -1,44 +1,82 @@
 
+
 // _addresses that correspond to the different abilities of this device
-
 //Temp outputs
-  short OUT_TEMP_L = 0x20;
-  short OUT_TEMP_H = 0x21;
-
+short OUT_TEMP_L = 0x20;
+short OUT_TEMP_H = 0x21;
 //IMU data
-  short OUTX_L_G = 0x22;
-  short OUTX_H_G = 0x23;
-  short OUTY_L_G = 0x24;
-  short OUTY_H_G = 0x25;
-  short OUTZ_L_G = 0x26;
-  short OUTZ_H_G = 0x27;
-  short OUTX_L_A = 0x28;
-  short OUTX_H_A = 0x29;
-  short OUTY_L_A = 0x2A;
-  short OUTY_H_A = 0x2B;
-  short OUTZ_L_A = 0x2C;
-  short OUTZ_H_A = 0x2D;
+short OUTX_L_G = 0x22;
+short OUTX_H_G = 0x23;
+short OUTY_L_G = 0x24;
+short OUTY_H_G = 0x25;
+short OUTZ_L_G = 0x26;
+short OUTZ_H_G = 0x27;
+short OUTX_L_A = 0x28;
+short OUTX_H_A = 0x29;
+short OUTY_L_A = 0x2A;
+short OUTY_H_A = 0x2B;
+short OUTZ_L_A = 0x2C;
+short OUTZ_H_A = 0x2D;
 
-// First In, First Out addresses. These are used for advanced features. 
+short EMB_FUNC_STATUS_MAINPAGE = 0x35;
+short FSM_STATUS_A_MAINPAGE = 0x36;
+short FSM_STATUS_B_MAINPAGE = 0x37;
+short MLC_STATUS_MAINPAGE = 0x38;
+short STATUS_MASTER_MAINPAGE = 0x39;
 short FIFO_STATUS1 = 0x3A;
 short FIFO_STATUS2 = 0x3B;
+short TIMESTAMP0 = 0x40;
+short TIMESTAMP1 = 0x41;
+short TIMESTAMP2 = 0x42;
+short TIMESTAMP3 = 0x43;
+short UI_STATUS_REG_OIS = 0x49;
+short UI_OUTX_L_G_OIS = 0x4A;
+short UI_OUTX_H_G_OIS = 0x4B;
+short UI_OUTY_L_G_OIS = 0x4C;
+short UI_OUTY_H_G_OIS = 0x4D;
+short UI_OUTZ_L_G_OIS = 0x4E;
+short UI_OUTZ_H_G_OIS = 0x4F;
+short UI_OUTX_L_A_OIS = 0x50;
+short UI_OUTX_H_A_OIS = 0x51;
+short UI_OUTY_L_A_OIS = 0x52;
+short UI_OUTY_H_A_OIS = 0x53;
+short UI_OUTZ_L_A_OIS = 0x54;
 
-// Timestamp addresses. This uses Unix time, which is a 32 bit feature that counts the seconds that have ellapsed since January 1, 1970 at 00:00 UTC 
-  short TIMESTAMP0 = 0x40;
-  short TIMESTAMP1 = 0x41;
-  short TIMESTAMP2 = 0x42;
-  short TIMESTAMP3 = 0x43;
+int hoursPassed = 0;
 
-// these had to be a global variables because these are the only variables that are really used multiple times in different Void functions
-  int hoursPassed = 0;
-  int TimeZone = 0; 
+#ifndef ProtoLSM6DSOXLib_h
+#define ProtoLSM6DSOXLib_h
 
-#include "Arduino.h"
-#include "ProtoLSM6DSOXLib.h"
-#include <Wire.h> 
-   
+#include <Arduino.h>
+#include <Wire.h>
+#include <Time.h>
 
-// initializer function that will look like this : ProtoLSM6DSOXLib accel(your address); 
+class ProtoLSM6DSOXLib {
+  public:
+    ProtoLSM6DSOXLib(int _address);
+    void readAccelX();
+    void readAccelY();
+    void readAccelZ();
+    void readGyroX();
+    void readGyroY();
+    void readGyroZ();
+    void readTempF();
+    void readTempC();
+    void GetFIFOStat();
+    void GetFIFOStat2(int thresh);
+    void getTime();
+    void setTimeZone(int TimeZone);
+    void getTimeRaw();
+  private:
+    int _address;
+    int _thresh;
+    int _TimeZone;
+};
+
+#endif
+
+
+
 ProtoLSM6DSOXLib :: ProtoLSM6DSOXLib(int address) {
 
   Wire.begin(address);
@@ -46,7 +84,7 @@ ProtoLSM6DSOXLib :: ProtoLSM6DSOXLib(int address) {
 
 }
 
-//accerometer data
+
 void ProtoLSM6DSOXLib :: readAccelX() {
   Wire.beginTransmission(_address);
   Wire.requestFrom(_address, 0x02);
@@ -62,12 +100,17 @@ void ProtoLSM6DSOXLib :: readAccelX() {
 
   String BinAx = String(accelx.DaX_16);
   
-  long FinAx = BinAx.toInt();
+  long NotAx = BinAx.toInt();
+  
+  long StillNotAx = map(NotAx, 0, 65536, 0, 20000);
+  
+  long FinAx = StillNotAx * 9.8;
+  
+  Wire.endTransmission();
   
   return FinAx;
 }
 
-//accerometer data
 void ProtoLSM6DSOXLib :: readAccelY() {
   Wire.beginTransmission(_address);
   Wire.requestFrom(_address, 0x02);
@@ -84,14 +127,17 @@ void ProtoLSM6DSOXLib :: readAccelY() {
   
   String BinAy = String(accely.DaY_16);
   
-  long FinAy = BinAy.toInt();
+  long NotAy = BinAy.toInt();
+  
+  long StillNotAy = map(NotAy, 0, 65536, 0, 20000);
+  
+  float FinAy = StillNotAy * 9.8;
   
   Wire.endTransmission();
   
   return FinAy;
 }
 
-//accerometer data
 void ProtoLSM6DSOXLib :: readAccelZ() {
   Wire.beginTransmission(_address);
   Wire.requestFrom(_address, 0x02);
@@ -108,13 +154,17 @@ void ProtoLSM6DSOXLib :: readAccelZ() {
   
   String BinAz = String(accelz.DaZ_16);
   
-  long FinAz = BinAz.toInt();
+  long NotAz = BinAz.toInt();
+  
+  long StillNotAz = map(NotAz, 0, 65536, 0, 20000);
+  
+  float FinAz = StillNotAz * 9.8;
   
   Wire.endTransmission();
   
   return FinAz;
 }
-//Gyroscope data
+
 void ProtoLSM6DSOXLib :: readGyroX() {
   Wire.beginTransmission(_address);
   Wire.requestFrom(_address, 0x02);
@@ -131,14 +181,15 @@ void ProtoLSM6DSOXLib :: readGyroX() {
 
   String BinGx = String(gyrox.DgX_16);  
   
-  long FinGx = BinGx.toInt();
+  long NotGx = BinGx.toInt();
+  
+  long FinGx = map(NotGx, 0, 65536, -36000, 36000);
   
   Wire.endTransmission();
   
   return FinGx;
 }
 
-//Gyroscope data
 void ProtoLSM6DSOXLib :: readGyroY() {
   Wire.beginTransmission(_address);
   Wire.requestFrom(_address, 0x02);
@@ -155,14 +206,15 @@ void ProtoLSM6DSOXLib :: readGyroY() {
   
   String BinGy = String(gyroy.DgY_16);
   
-  long FinGy = BinGy.toInt();
+  long NotGy = BinGy.toInt();
+  
+  long FinGy = map(NotGy, 0, 65536, -36000, 36000);
   
   Wire.endTransmission();
   
   return FinGy;
 }
 
-//Gyroscope data
 void ProtoLSM6DSOXLib :: readGyroZ() {
   Wire.beginTransmission(_address);
   Wire.requestFrom(_address, 0x02);
@@ -179,13 +231,15 @@ void ProtoLSM6DSOXLib :: readGyroZ() {
   
   String BinGz = String(gyroz.DgZ_16);
   
-  long FinGz = BinGz.toInt();
+  long NotGz = BinGz.toInt();
+  
+  long FinGz = map(NotGz, 0, 65536, -36000, 36000);
   
   Wire.endTransmission();
   
   return FinGz;
 }
-// temperature data -- in F
+
 void ProtoLSM6DSOXLib :: readTempF() {
   
   Wire.beginTransmission(_address);
@@ -212,7 +266,6 @@ void ProtoLSM6DSOXLib :: readTempF() {
   return CtoFConv;
 }
 
-// temperature data --  in C
 void ProtoLSM6DSOXLib :: readTempC() {
  
   Wire.beginTransmission(_address);
@@ -237,7 +290,7 @@ void ProtoLSM6DSOXLib :: readTempC() {
   return FinTc;
   }
   
-// FIFO function 
+// FIFO stats are on page 38
 void ProtoLSM6DSOXLib :: GetFIFOStat() {
   Wire.beginTransmission(_address);
   Wire.requestFrom(_address, 0x01);
@@ -251,7 +304,6 @@ void ProtoLSM6DSOXLib :: GetFIFOStat() {
   return FIFONum;
 }
 
-// FIFO function 2
 void ProtoLSM6DSOXLib :: GetFIFOStat2(int THRESH) {
   Wire.beginTransmission(_address);
   Wire.requestFrom(_address, 0x01);
@@ -270,8 +322,7 @@ void ProtoLSM6DSOXLib :: GetFIFOStat2(int THRESH) {
   
   return FIFOSt;
 }
-
-// time function 1
+// page 39 gives info on connections
 void ProtoLSM6DSOXLib :: getTime() {
   Wire.beginTransmission(_address);
   Wire.requestFrom(_address, 0x04);
@@ -368,8 +419,7 @@ void ProtoLSM6DSOXLib :: getTime() {
   
 }
 
-// time function 2
-void setTimeZone(int TimeZone) {
+void ProtoLSM6DSOXLib :: setTimeZone(int TimeZone) {
   int TimeZoneShift = 0;
   if (-13 > TimeZone > 13) {
     TimeZone == false;
@@ -380,4 +430,27 @@ void setTimeZone(int TimeZone) {
   }
 
   return TimeZoneShift;
+}
+
+void ProtoLSM6DSOXLib :: getTimeRaw(){
+  
+  Wire.beginTransmission(_address);
+  Wire.requestFrom(_address, 0x04);
+  
+  typedef union RAWTIME {
+    uint32_t rawTime_32;
+    uint8_t rawTime_8[4];
+  };
+
+  RAWTIME rawTime;
+  rawTime.rawTime_8[0] = Wire.write(byte(TIMESTAMP0));
+  rawTime.rawTime_8[1] = Wire.write(byte(TIMESTAMP1));
+  rawTime.rawTime_8[2] = Wire.write(byte(TIMESTAMP2));
+  rawTime.rawTime_8[3] = Wire.write(byte(TIMESTAMP3));
+  
+  String RaTime = String(rawTime.rawTime_32);
+  
+  long ratime = RaTime.toInt();
+  
+  return ratime;
 }
