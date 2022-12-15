@@ -1,5 +1,4 @@
 
-
 // _addresses that correspond to the different abilities of this device
 //Temp outputs
 short OUT_TEMP_L = 0x20;
@@ -44,6 +43,12 @@ short UI_OUTZ_L_A_OIS = 0x54;
 
 int hoursPassed = 0;
 
+float InitalVelocityX = 0;
+float InitalVelocityY = 0;
+float InitalVelocityZ = 0;
+
+const float GravitationalConstant = 9.8;
+
 #ifndef ProtoLSM6DSOXLib_h
 #define ProtoLSM6DSOXLib_h
 
@@ -57,6 +62,10 @@ class ProtoLSM6DSOXLib {
     void readAccelX();
     void readAccelY();
     void readAccelZ();
+    void getVx();
+    void getVy();
+    void getVz();
+    void setTerminalV(float Mass, float Density, float Area);
     void readGyroX();
     void readGyroY();
     void readGyroZ();
@@ -71,6 +80,9 @@ class ProtoLSM6DSOXLib {
     int _address;
     int _thresh;
     int _TimeZone;
+    float _Mass;
+    float _Density;
+    float _Area;
 };
 
 #endif
@@ -163,6 +175,148 @@ void ProtoLSM6DSOXLib :: readAccelZ() {
   Wire.endTransmission();
   
   return FinAz;
+}
+
+void ProtoLSM6DSOXLib :: getVx(){
+  Wire.beginTransmission(_address);
+  Wire.requestFrom(_address, 0x04);
+  
+  typedef union VELOCITYX1 {
+    uint8_t DxV1_8[2];
+    uint16_t DxV1_16;
+  };
+ 
+  VELOCITYX1 velocityx1
+ 
+  velocityx1.DxV1_8[0] = Wire.write(byte(0x28));
+  velocityx1.DxV1_8[1] = Wire.write(byte(0x29));
+  
+  String BinVx1 = String(velocityx1.DxV1_16);
+ 
+  long NotVx1 = BinVx1.toInt();
+  
+  long stillNotVx1 = map(NotVx1, 65536, 0, 20000);
+  
+  long almostVx1 = stillNotVx1 * 9.8;
+  
+  delay(5000);
+  
+  typedef union VELOCITYX2 {
+    uint8_t DxV2_8[2];
+    uint16_t DxV2_16;
+  };
+
+  VELOCITYX2 velocityx2;
+  
+  velocityx2.DxV2_8[0] = Wire.write(byte(0x28));
+  velocityx2.DxV2_8[1] = Wire.write(byte(0x29));
+  
+  String BinVx2 = String(velocityx1.DxV2_16);
+  
+  long NotVx2 = BinVx2.toInt(); 
+  long stillNotVx2 = map(NotVx2, 0, 65536, 0, 20000);
+  float almostVx2 = stillNotVx2 * 9.8;
+  float VelocityX = InitalVelocityX + (((almostVx2 + almostVx1) / 2) * 5);
+  float InitalVelocityX = VelocityX;
+  
+  Wire.endTransmission();
+  
+  return VelocityX;
+}
+
+void ProtoLSM6DSOXLib :: getVy(){
+ Wire.beginTransmission(_address);
+ Wire.requestFrom(_address, 0x04);
+ 
+ typedef union VELOCITYY1 {
+   uint8_t DvY1_8[2];
+   uint16_t DvY1_16;
+ };
+ 
+  VELOCITYY1 velocityy1;
+  velocityy1.DvY1_8[0] = Wire.write(byte(0x2A));
+  velocityy1.DvY1_8[1] = Wire.write(byte(0x2B));
+  
+  String BinVy1 = String(velocityy1.DvY1_16);
+  
+  long NotVy1 = BinVy1.toInt();
+  long stillNotVy1 = map(NotVy1, 0, 65536, 0, 20000);
+  float almostVy1 = stillNotVy1 * 9.8 
+  
+  delay(5000);
+  
+  typedef union VELOCITYY2 {
+    uint8_t DvY2_8[2];
+    uint16_t DvY2_16;
+  };
+
+  VELOCITYY2 velocityy2;
+  velocityy2.DvY2_8[0] = Wire.write(byte(0x2A));
+  velocityy2.DvY2_8[1] = Wire.write(byte(0x2B));
+  
+  String BinVy2 = String(velocityy2.DvY2_16);
+  
+  long NotVy2 = BinVy2.toInt();
+  long stillNotVy2 = map(NotVy1, 0, 65536, 0, 20000);
+  float almostVy2 =  stillNotVy2 * 9.8;
+  float VelocityY = InitalVelocityY + (((almostVy2 + almostVy1) / 2) * 5);
+  float InitalVelocityY = VelocityY
+  
+  Wire.endTransmission();
+}
+
+void ProtoLSM6DSOXLib :: getVz(){
+  Wire.beginTransmission(_address);
+  Wire.requestFrom(_address, 0x04);
+  
+  typedef union VELOCITYZ1 {
+    uint8_t DvZ1_8[2];
+    uint16_t DvZ1_16;
+  };
+  
+  VELOCITYZ1 velocityz1;
+  velocityz1.DvZ1_8[0] = Wire.write(byte(0x2C));
+  velocityz1.DvZ1_8[1] = Wire.write(byte(0x2D));
+  String BinVz1 = String(velocityz1.DvZ1_16);
+  
+  long NotVz1 = BinVz1.toInt();
+  long stillNotVz1 = map(NotVz1, 0, 65536, 0, 20000);
+  float almostVz1 = stillNotVz1 * 9.8;
+  
+  delay(5000);
+  
+  typedef union VELOCITYZ2 {
+    uint8_t DvZ2_8[2];
+    uint16_t DvZ2_16;
+  };
+  
+  VELOCITYZ2 velocityz2;
+  velocityz2.DvZ2_8[0] = Wire.write(byte(0x2C));
+  velocityz2.DvZ2_8[1] = Wire.write(byte(0x2D));
+  String BinVz2 = String(velocityz2.DvZ2_16);
+  
+  long NotVz2 = BinVz2.toInt();
+  long stillNotVz2 = map(NotVz2, 0, 65536, 0, 20000);
+  float almostVz2 = stillNotVz2 * 9.8;
+  float VelocityZ = InitalVelocityZ + ((almostVz1 + almostVz2) * 5);
+  float InitalVelocityZ = VelocityZ;
+  
+  Wire.endTransmission();
+  
+  return VelocityZ;
+}
+
+void setTerminalV (float Mass, float Density, float Area){
+  
+  float dragForce = (0.5 * Density * pow(GravitationalConstant, 2) * Area);
+  float dragCoeficient = ((2 * dragForce) / Density * pow(GravitationalConstant, 2) * Area);
+  float TerminalVelocity = sqrt((2 * Mass * GravitationalConstant) / (Density * Area * dragCoeficient));
+  
+  _Mass = Mass;
+  _Density = Density;
+  _Area = Area;
+  
+  return TerminalVelocity;
 }
 
 void ProtoLSM6DSOXLib :: readGyroX() {
