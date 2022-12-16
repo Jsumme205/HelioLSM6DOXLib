@@ -306,7 +306,7 @@ void ProtoLSM6DSOXLib :: getVz(){
   return VelocityZ;
 }
 
-void setTerminalV (float Mass, float Density, float Area){
+void  ProtoLSM6DSOXLib :: setTerminalVelocity (float Mass, float Density, float Area){
   
   float dragForce = (0.5 * Density * pow(GravitationalConstant, 2) * Area);
   float dragCoeficient = ((2 * dragForce) / Density * pow(GravitationalConstant, 2) * Area);
