@@ -337,7 +337,7 @@ void ProtoLSM6DSOXLib :: readGyroX() {
   
   long NotGx = BinGx.toInt();
   
-  long FinGx = map(NotGx, 0, 65536, -36000, 36000);
+  long FinGx = map(NotGx, 0, 65536, 0, 36000);
   
   Wire.endTransmission();
   
@@ -362,7 +362,7 @@ void ProtoLSM6DSOXLib :: readGyroY() {
   
   long NotGy = BinGy.toInt();
   
-  long FinGy = map(NotGy, 0, 65536, -36000, 36000);
+  long FinGy = map(NotGy, 0, 65536, 0, 36000);
   
   Wire.endTransmission();
   
@@ -387,7 +387,7 @@ void ProtoLSM6DSOXLib :: readGyroZ() {
   
   long NotGz = BinGz.toInt();
   
-  long FinGz = map(NotGz, 0, 65536, -36000, 36000);
+  long FinGz = map(NotGz, 0, 65536, 0, 36000);
   
   Wire.endTransmission();
   
