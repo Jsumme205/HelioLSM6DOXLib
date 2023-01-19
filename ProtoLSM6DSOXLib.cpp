@@ -134,7 +134,8 @@ typedef union ACCELZ{
 ACCELZ accelz;
 Wire.beginTransmission(_address);
 Wire.write(0x2C);
-Wire.requestFrom
+Wire.requestFrom(_address, 1)
+accelz.DaZ_8[0] = Wire.read();
 
 
 String BinAz = String(accelz.DaZ_16);
