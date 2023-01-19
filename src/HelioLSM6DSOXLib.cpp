@@ -57,101 +57,101 @@ const float GravitationalConstant = 9.8;
 
 ProtoLSM6DSOXLib :: ProtoLSM6DSOXLib(int address) {
 
-Wire.begin(address);
-_address = address;
+	Wire.begin(address);
+	_address = address;
 
 }
 
 
 void ProtoLSM6DSOXLib :: readAccelX() {
-typedef union ACCELX {
-	uint8_t DaX_8[2];
-	uint16_t DaX_16;
-};
+	typedef union ACCELX {
+		uint8_t DaX_8[2];
+		uint16_t DaX_16;
+	};
 
-ACCELX accelx;
+	ACCELX accelx;
 
-Wire.beginTransmission(_address);
-Wire.write(0x28);
-Wire.requestFrom(_address, 1);
-accelx.DaX_8[0] = Wire.read();
+	Wire.beginTransmission(_address);
+	Wire.write(0x28);
+	Wire.requestFrom(_address, 1);
+	accelx.DaX_8[0] = Wire.read();
 
-Wire.write(0x29);
-Wire.requestFrom(_address, 1);
-accelx.DaX_8[1] = Wire.read();
+	Wire.write(0x29);	
+	Wire.requestFrom(_address, 1);
+	accelx.DaX_8[1] = Wire.read();
 
 
-String BinAx = String(accelx.DaX_16);
+	String BinAx = String(accelx.DaX_16);
 
-long NotAx = BinAx.toInt();
+	long NotAx = BinAx.toInt();
 
-long StillNotAx = map(NotAx, 0, 65536, 0, 20000);
+	long StillNotAx = map(NotAx, 0, 65536, 0, 20000);
 
-long FinAx = StillNotAx * 9.8;
+	long FinAx = StillNotAx * 9.8;
 
-Wire.endTransmission();
+	Wire.endTransmission();
 
-return FinAx;
+	return FinAx;
 }
 
 void ProtoLSM6DSOXLib :: readAccelY() {
-typedef union ACCELY {
-	uint8_t DaY_8[2];
-	uint16_t DaY_16;
-};
+	typedef union ACCELY {
+		uint8_t DaY_8[2];
+		uint16_t DaY_16;
+	};
 
-ACCELY accely;
-Wire.beginTransmission(_address);
-Wire.write(0x2A);
-Wire.requestFrom(_address, 1);
-accely.DaY_8[0] = Wire.read();
+	ACCELY accely;
+	Wire.beginTransmission(_address);
+	Wire.write(0x2A);
+	Wire.requestFrom(_address, 1);
+	accely.DaY_8[0] = Wire.read();
 
-Wire.write(0x2B);
-Wire.requestFrom(_address, 1);
-accely.DaY_8[1] = Wire.read();
+	Wire.write(0x2B);
+	Wire.requestFrom(_address, 1);
+	accely.DaY_8[1] = Wire.read();
 
 
-String BinAy = String(accely.DaY_16);
+	String BinAy = String(accely.DaY_16);
 
-long NotAy = BinAy.toInt();
+	long NotAy = BinAy.toInt();
 
-long StillNotAy = map(NotAy, 0, 65536, 0, 20000);
+	long StillNotAy = map(NotAy, 0, 65536, 0, 20000);
 
-float FinAy = StillNotAy * 9.8;
+	float FinAy = StillNotAy * 9.8;
 
-Wire.endTransmission();
+	Wire.endTransmission();
 
-return FinAy;
+	return FinAy;
 }
 
 void ProtoLSM6DSOXLib :: readAccelZ() {
 
-typedef union ACCELZ{
-	uint8_t DaZ_8[2];
-	uint16_t DaZ_16;
-};
+	typedef union ACCELZ{
+		uint8_t DaZ_8[2];
+		uint16_t DaZ_16;
+	};
 
-ACCELZ accelz;
-Wire.beginTransmission(_address);
-Wire.write(0x2C);
-Wire.requestFrom(_address, 1)
-accelz.DaZ_8[0] = Wire.read();
+	ACCELZ accelz;
+	Wire.beginTransmission(_address);
+	Wire.write(0x2C);
+	Wire.requestFrom(_address, 1)
+	accelz.DaZ_8[0] = Wire.read();
 
-Wire.write(0x2D);
-Wire.requestFrom(_address, 1);
-accelz.DaZ_8[1] = Wire.read();
+	Wire.write(0x2D);
+	Wire.requestFrom(_address, 1);
+	accelz.DaZ_8[1] = Wire.read();
 	
-String BinAz = String(accelz.DaZ_16);
+	String BinAz = String(accelz.DaZ_16);
 
-long NotAz = BinAz.toInt();
+	long NotAz = BinAz.toInt();
 
-long StillNotAz = map(NotAz, 0, 65536, 0, 20000);
+	long StillNotAz = map(NotAz, 0, 65536, 0, 20000);
 
-float FinAz = StillNotAz * 9.8;
+	float FinAz = StillNotAz * 9.8;
 
-Wire.endTransmission();
+	Wire.endTransmission();
 
-return FinAz;
+	return FinAz;
 }
 
 void ProtoLSM6DSOXLib :: getVx(){
@@ -294,6 +294,10 @@ void ProtoLSM6DSOXLib :: getVz(){
 	Wire.requestFrom(_address, 1);
 	velocityz2.DvZ2_8[0] = Wire.read();
 	
+	Wire.write(0x2D);
+	Wire.requestFrom(_address, 1);
+	velocityz2.DvZ2_8[1] = Wire.read();
+	
 	String BinVz2 = String(velocityz2.DvZ2_16);
 
 	long NotVz2 = BinVz2.toInt();
@@ -309,303 +313,308 @@ void ProtoLSM6DSOXLib :: getVz(){
 
 void  ProtoLSM6DSOXLib :: setTerminalVelocity (float Mass, float Density, float Area){
 
-float dragForce = (0.5 * Density * pow(GravitationalConstant, 2) * Area);
-float dragCoeficient = ((2 * dragForce) / Density * pow(GravitationalConstant, 2) * Area);
-float TerminalVelocity = sqrt((2 * Mass * GravitationalConstant) / (Density * Area * dragCoeficient));
+	float dragForce = (0.5 * Density * pow(GravitationalConstant, 2) * Area);
+	float dragCoeficient = ((2 * dragForce) / Density * pow(GravitationalConstant, 2) * Area);
+	float TerminalVelocity = sqrt((2 * Mass * GravitationalConstant) / (Density * Area * dragCoeficient));
 
-_Mass = Mass;
-_Density = Density;
-_Area = Area;
+	_Mass = Mass;
+	_Density = Density;
+	_Area = Area;
 
-return TerminalVelocity;
+	return TerminalVelocity;
 }
 
 void ProtoLSM6DSOXLib :: readGyroX() {
-Wire.beginTransmission(_address);
-Wire.requestFrom(_address, 0x02);
+	typedef union GYROX {
+		uint8_t DgX_8[2];
+		uint16_t DgX_16;
+	};
 
-typedef union GYROX {
-	uint8_t DgX_8[2];
-	uint16_t DgX_16;
-};
+	GYROX gyrox;
+	
+	Wire.beginTransmission(_address);
+	Wire.write(0x22);
+	Wire.requestFrom(_address, 1);
+	gyrox.DgX_8[0] = Wire.read();
+	
+	Wire.write(0x23);
+	Wire.requestFrom(_address, 1);
+	gyrox.DgX_8[1] = Wire.read();
+	
+	String BinGx = String(gyrox.DgX_16);  
 
-GYROX gyrox;
+	long NotGx = BinGx.toInt();
 
-gyrox.DgX_8[0] = Wire.write(byte(0x22));
-gyrox.DgX_8[1] = Wire.write(byte(0x23));
+	long FinGx = map(NotGx, 0, 65536, 0, 36000);
 
-String BinGx = String(gyrox.DgX_16);  
+	Wire.endTransmission();
 
-long NotGx = BinGx.toInt();
-
-long FinGx = map(NotGx, 0, 65536, 0, 36000);
-
-Wire.endTransmission();
-
-return FinGx;
+	return FinGx;
 }
 
 void ProtoLSM6DSOXLib :: readGyroY() {
-Wire.beginTransmission(_address);
-Wire.requestFrom(_address, 0x02);
+	typedef union GYROY {
+		uint8_t DgY_8[2];
+		uint16_t DgY_16;
+	};
 
-typedef union GYROY {
-	uint8_t DgY_8[2];
-	uint16_t DgY_16;
-};
+	GYROY gyroy;
 
-GYROY gyroy;
+	Wire.beginTransmission(_address);
+	Wire.write(0x24);
+	Wire.requestFrom(_address, 1);
+	gyroy.DgY_8[0] = Wire.read();
+	
+	Wire.write(0x25);
+	Wire.requestFrom(_address, 1);
+	gyroy.DgY_8[1] = Wire.read();
+	
+	String BinGy = String(gyroy.DgY_16);
 
-gyroy.DgY_8[0] = Wire.write(byte(0x24));
-gyroy.DgY_8[1] = Wire.write(byte(0x25));
+	long NotGy = BinGy.toInt();
 
-String BinGy = String(gyroy.DgY_16);
+	long FinGy = map(NotGy, 0, 65536, 0, 36000);
 
-long NotGy = BinGy.toInt();
+	Wire.endTransmission();
 
-long FinGy = map(NotGy, 0, 65536, 0, 36000);
-
-Wire.endTransmission();
-
-return FinGy;
+	return FinGy;
 }
 
 void ProtoLSM6DSOXLib :: readGyroZ() {
-Wire.beginTransmission(_address);
-Wire.requestFrom(_address, 0x02);
+	typedef union GYROZ {
+		uint8_t DgZ_8[2];
+		uint16_t DgZ_16;
+	};
 
-typedef union GYROZ {
-	uint8_t DgZ_8[2];
-	uint16_t DgZ_16;
-};
+	GYROZ gyroz;
 
-GYROZ gyroz;
+	Wire.beginTransmission(_address);
+	Wire.write(0x26);
+	Wire.requestFrom(_address, 1);
+	gyroz.DgZ_8[0] = Wire.read();
+	
+	Wire.write(0x27);
+	Wire.requestFrom(_address);
+	gyroz.DgZ_8[1] = Wire.read();
+	
+	String BinGz = String(gyroz.DgZ_16);
 
-gyroz.DgZ_8[0] = Wire.write(byte(0x26));
-gyroz.DgZ_8[1] = Wire.write(byte(0x27));
+	long NotGz = BinGz.toInt();
 
-String BinGz = String(gyroz.DgZ_16);
+	long FinGz = map(NotGz, 0, 65536, 0, 36000);
 
-long NotGz = BinGz.toInt();
+	Wire.endTransmission();
 
-long FinGz = map(NotGz, 0, 65536, 0, 36000);
-
-Wire.endTransmission();
-
-return FinGz;
+	return FinGz;
 }
 
 void ProtoLSM6DSOXLib :: readTempF() {
+	typedef union TEMPF {
+		uint8_t DtF_8[2];
+		uint16_t DtF_16;
+	};
 
-Wire.beginTransmission(_address);
-Wire.requestFrom(_address, 0x02);
+	TEMPF tempf;
+	Wire.beginTransmission(_address);
+	Wire.write(OUT_TEMP_L);
+	Wire.requestFrom(_address, 1);
 
-typedef union TEMPF {
-	uint8_t DtF_8[2];
-	uint16_t DtF_16;
-};
+	String BinTf = String(tempf.DtF_16);
 
-TEMPF tempf;
+	long FinTf = BinTf.toInt();
 
-tempf.DtF_8[0] = Wire.write(byte(OUT_TEMP_L));
-tempf.DtF_8[1] = Wire.write(byte(OUT_TEMP_H));
+	float CtoFConv = (FinTf * 1.8) + 32;
 
-String BinTf = String(tempf.DtF_16);
+	Wire.endTransmission();
 
-long FinTf = BinTf.toInt();
-
-float CtoFConv = (FinTf * 1.8) + 32;
-
-Wire.endTransmission();
-
-return CtoFConv;
+	return CtoFConv;
 }
 
 void ProtoLSM6DSOXLib :: readTempC() {
 
-Wire.beginTransmission(_address);
-Wire.requestFrom(_address, 0x02);
+	Wire.beginTransmission(_address);
+	Wire.requestFrom(_address, 0x02);
 
-typedef union TEMPC {
-uint8_t DtC_8[2];
-uint16_t DtC_16; 
-};
+	typedef union TEMPC {
+		uint8_t DtC_8[2];
+		uint16_t DtC_16; 
+	};
 
-TEMPC tempc;
+	TEMPC tempc;
 
-tempc.DtC_8[0] = Wire.write(byte(OUT_TEMP_L));
-tempc.DtC_8[1] = Wire.write(byte(OUT_TEMP_H));
+	tempc.DtC_8[0] = Wire.write(byte(OUT_TEMP_L));
+	tempc.DtC_8[1] = Wire.write(byte(OUT_TEMP_H));
 
-String BinTc = String(tempc.DtC_16);
+	String BinTc = String(tempc.DtC_16);
 
-long FinTc = BinTc.toInt();
+	long FinTc = BinTc.toInt();
 
-Wire.endTransmission();
+	Wire.endTransmission();
 
-return FinTc;
+	return FinTc;
 }
 
 // FIFO stats are on page 38
 void ProtoLSM6DSOXLib :: GetFIFOStat() {
-Wire.beginTransmission(_address);
-Wire.requestFrom(_address, 0x01);
-int FIFONum = 0;
-if (sizeof(Wire.write(byte(FIFO_STATUS1))) >= 7) {
-	FIFONum ++;
-}
+	Wire.beginTransmission(_address);
+	Wire.requestFrom(_address, 0x01);
+	int FIFONum = 0;
+	if (sizeof(Wire.write(byte(FIFO_STATUS1))) >= 7) {
+		FIFONum ++;
+	}
 
-Wire.endTransmission();
+	Wire.endTransmission();
 
-return FIFONum;
+	return FIFONum;
 }
 
 void ProtoLSM6DSOXLib :: GetFIFOStat2(int THRESH) {
-Wire.beginTransmission(_address);
-Wire.requestFrom(_address, 0x01);
-int FIFONum2 = 0;
-bool FIFOSt;
-if (sizeof(Wire.write(byte(FIFO_STATUS2))) >= 7) {
-	FIFONum2 ++;
-	FIFOSt = false;
-}
-if (FIFONum2 > THRESH) {
-	FIFOSt = true;
-}
+	Wire.beginTransmission(_address);
+	Wire.requestFrom(_address, 0x01);
+	int FIFONum2 = 0;
+	bool FIFOSt;
+	if (sizeof(Wire.write(byte(FIFO_STATUS2))) >= 7) {
+		FIFONum2 ++;
+		FIFOSt = false;
+	}
+	else if (FIFONum2 > THRESH) {
+		FIFOSt = true;
+	}
 
-_thresh = THRESH;
-Wire.endTransmission();
+	_thresh = THRESH;
+	Wire.endTransmission();
 
-return FIFOSt;
+	return FIFOSt;
 }
 // page 39 gives info on connections
 void ProtoLSM6DSOXLib :: getTime() {
-Wire.beginTransmission(_address);
-Wire.requestFrom(_address, 0x04);
+	Wire.beginTransmission(_address);
+	Wire.requestFrom(_address, 0x04);
 
-typedef union COMBO {
-	uint32_t data_32;
-	uint8_t data_8[4];
-};
+	typedef union COMBO {
+		uint32_t data_32;
+		uint8_t data_8[4];
+	};
 
-COMBO combo;
-combo.data_8[0] = Wire.write(byte(TIMESTAMP0));
-combo.data_8[1] = Wire.write(byte(TIMESTAMP1));
-combo.data_8[2] = Wire.write(byte(TIMESTAMP2));
-combo.data_8[3] = Wire.write(byte(TIMESTAMP3));
+	COMBO combo;
+	combo.data_8[0] = Wire.write(byte(TIMESTAMP0));
+	combo.data_8[1] = Wire.write(byte(TIMESTAMP1));
+	combo.data_8[2] = Wire.write(byte(TIMESTAMP2));
+	combo.data_8[3] = Wire.write(byte(TIMESTAMP3));
 
-String unix_time = String(combo.data_32);
+	String unix_time = String(combo.data_32);
 
-long UT = unix_time.toInt();
+	long UT = unix_time.toInt();
 
-#define secondsInYear 31556952
-#define secondsInLeap 31643352
-#define secondsInMonth 2592000
-#define secondsInDay 86400
-#define secondsInHour 3600
-#define secondsInMinute 60
+	#define secondsInYear 31556952
+	#define secondsInLeap 31643352
+	#define secondsInMonth 2592000
+	#define secondsInDay 86400	
+	#define secondsInHour 3600
+	#define secondsInMinute 60
 
-int newValY = UT - secondsInYear;
-int newValL = newValY - secondsInLeap;
-int newValM = newValY - secondsInMonth;
-int newValD = newValM - secondsInDay;
-int newValH = newValD - secondsInHour;
-int newValS = newValD - secondsInMinute;
-
-int yearsPassed = 0;
-int monthsPassed = 0;
-int daysPassed = 0;
-int minutesPassed = 0;
-
-for (UT > 0; secondsInYear <= UT; UT - secondsInYear) {
 	int newValY = UT - secondsInYear;
-	int i = 0;
-	i++;
-	yearsPassed++;
-	for (i = 4; secondsInLeap <= newValY ; newValY - secondsInLeap) {
 	int newValL = newValY - secondsInLeap;
-	int i = 0;
-	yearsPassed++;
-	}
-}
-
-for (newValY > 0 && secondsInYear > newValY; secondsInMonth <= newValY && secondsInMonth <= newValL; newValY - secondsInMonth) {
 	int newValM = newValY - secondsInMonth;
-	monthsPassed++;
-	if (monthsPassed > 12) {
-	monthsPassed = 0;
-	yearsPassed++;
-	}
-}
-
-for (newValM > 0 && secondsInMonth > newValM; secondsInDay <= newValM; newValM - secondsInMonth) {
 	int newValD = newValM - secondsInDay;
-	daysPassed++;
-	if (daysPassed > 30) {
-	monthsPassed++;
-	}
-	daysPassed = 0;
-	monthsPassed++;
+	int newValH = newValD - secondsInHour;
+	int newValS = newValD - secondsInMinute;
 
-}
+	int yearsPassed = 0;
+	int monthsPassed = 0;
+	int daysPassed = 0;
+	int minutesPassed = 0;
+
+	for (UT > 0; secondsInYear <= UT; UT - secondsInYear) {
+		int newValY = UT - secondsInYear;
+		int i = 0;
+		i++;
+		yearsPassed++;
+		for (i = 4; secondsInLeap <= newValY ; newValY - secondsInLeap) {
+			int newValL = newValY - secondsInLeap;
+			int i = 0;
+			yearsPassed++;
+		}
+	}
+
+	for (newValY > 0 && secondsInYear > newValY; secondsInMonth <= newValY && secondsInMonth <= newValL; newValY - secondsInMonth) {
+		int newValM = newValY - secondsInMonth;
+		monthsPassed++;
+			if (monthsPassed > 12) {
+				monthsPassed = 0;
+				yearsPassed++;
+			}
+	}
+
+	for (newValM > 0 && secondsInMonth > newValM; secondsInDay <= newValM; newValM - secondsInMonth) {
+		int newValD = newValM - secondsInDay;
+		daysPassed++;
+		if (daysPassed > 30) {
+			monthsPassed++;
+		}
+		daysPassed = 0;
+		monthsPassed++;
+
+	}
 
 for (newValD > 0 && secondsInDay > newValD; secondsInHour <= newValD; newValD - secondsInHour) {
-	int hoursPassed = 0;
-	int newValH = newValD - secondsInHour;
-	hoursPassed++;
-	if (hoursPassed > 24) {
-	daysPassed++;
-	}
-	hoursPassed = 0;
-	daysPassed++;
+		int hoursPassed = 0;
+		int newValH = newValD - secondsInHour;
+		hoursPassed++;
+		if (hoursPassed > 24) {
+			daysPassed++;
+		}
+		hoursPassed = 0;
+		daysPassed++;
 
 }
 
-for (newValH > 0 && secondsInHour > newValH; secondsInMinute <= newValH; newValD - secondsInMinute) {
-	int newValS = newValD - secondsInMinute;
-	minutesPassed++;
-	if (minutesPassed > 60) {
-	minutesPassed = 0;
-	hoursPassed++;
+	for (newValH > 0 && secondsInHour > newValH; secondsInMinute <= newValH; newValD - secondsInMinute) {
+		int newValS = newValD - secondsInMinute;
+		minutesPassed++;
+		if (minutesPassed > 60) {
+			minutesPassed = 0;
+			hoursPassed++;
+		}
 	}
-}
 
-Wire.endTransmission();
+	Wire.endTransmission();
 
 
 }
 
 void ProtoLSM6DSOXLib :: setTimeZone(int TimeZone) {
-int TimeZoneShift = 0;
-if (-13 > TimeZone > 13) {
-	TimeZone == false;
-}
+	int TimeZoneShift = 0;
+	if (-13 > TimeZone > 13) {
+		return NULL;
+	}
 
-else {
-	int TimeZoneShift = hoursPassed + TimeZone;
-}
+	else {
+		int TimeZoneShift = hoursPassed + TimeZone;
+	}
 
-return TimeZoneShift;
+	return TimeZoneShift;
 }
 
 void ProtoLSM6DSOXLib :: getTimeRaw(){
 
-Wire.beginTransmission(_address);
-Wire.requestFrom(_address, 0x04);
+	Wire.beginTransmission(_address);	
+	Wire.requestFrom(_address, 0x04);
 
-typedef union RAWTIME {
-	uint32_t rawTime_32;
-	uint8_t rawTime_8[4];
-};
+	typedef union RAWTIME {
+		uint32_t rawTime_32;
+		uint8_t rawTime_8[4];
+	};
 
-RAWTIME rawTime;
-rawTime.rawTime_8[0] = Wire.write(byte(TIMESTAMP0));
-rawTime.rawTime_8[1] = Wire.write(byte(TIMESTAMP1));
-rawTime.rawTime_8[2] = Wire.write(byte(TIMESTAMP2));
-rawTime.rawTime_8[3] = Wire.write(byte(TIMESTAMP3));
+	RAWTIME rawTime;
+	rawTime.rawTime_8[0] = Wire.write(byte(TIMESTAMP0));
+	rawTime.rawTime_8[1] = Wire.write(byte(TIMESTAMP1));
+	rawTime.rawTime_8[2] = Wire.write(byte(TIMESTAMP2));
+	rawTime.rawTime_8[3] = Wire.write(byte(TIMESTAMP3));
 
-String RaTime = String(rawTime.rawTime_32);
+	String RaTime = String(rawTime.rawTime_32);
 
-long ratime = RaTime.toInt();
+	long ratime = RaTime.toInt();
 
-return ratime;
+	return ratime;
 }
