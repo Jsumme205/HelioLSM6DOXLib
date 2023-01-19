@@ -5,10 +5,10 @@
 // libraries that are used in this other library  
 
 // this is the main arduino library. It defines all of the pins, as well as all the functions that are unique to the microcontroller
-#include <Arduino.h>
+// #include <Arduino.h>
 
 // this enables the I2C interface. It brings the Wire. functions into play
-#include <Wire.h>
+ // #include <Wire.h>
 
 // creates a class, where all of the LSM6DSOX functions are contained in. Use this for easy reference to all of the functions.
 class ProtoLSM6DSOXLib {
