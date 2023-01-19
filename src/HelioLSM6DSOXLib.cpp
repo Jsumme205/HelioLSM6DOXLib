@@ -137,7 +137,10 @@ Wire.write(0x2C);
 Wire.requestFrom(_address, 1)
 accelz.DaZ_8[0] = Wire.read();
 
-
+Wire.write(0x2D);
+Wire.requestFrom(_address, 1);
+accelz.DaZ_8[1] = Wire.read();
+	
 String BinAz = String(accelz.DaZ_16);
 
 long NotAz = BinAz.toInt();
@@ -152,50 +155,56 @@ return FinAz;
 }
 
 void ProtoLSM6DSOXLib :: getVx(){
-Wire.beginTransmission(_address);
-Wire.requestFrom(_address, 0x04);
+	typedef union VELOCITYX1 {
+		uint8_t DxV1_8[2];
+		uint16_t DxV1_16;
+	};
 
-typedef union VELOCITYX1 {
-	uint8_t DxV1_8[2];
-	uint16_t DxV1_16;
-};
+	VELOCITYX1 velocityx1
+	Wire.beginTransmission(_address);
+	Wire.write(0x28);
+	Wire.requestFrom(_address, 1);
+	velocityx1.DxV1_8[0] = Wire.read();
+	
+	Wire.write(0x29);
+	Wire.requestFrom(_address, 1);
+	velocityx1.DxV1_8[1] = Wire.write();
+	
+	String BinVx1 = String(velocityx1.DxV1_16);
 
-VELOCITYX1 velocityx1
+	long NotVx1 = BinVx1.toInt();
 
-velocityx1.DxV1_8[0] = Wire.write(byte(0x28));
-velocityx1.DxV1_8[1] = Wire.write(byte(0x29));
+	long stillNotVx1 = map(NotVx1, 65536, 0, 20000);
 
-String BinVx1 = String(velocityx1.DxV1_16);
+	long almostVx1 = stillNotVx1 * 9.8;
 
-long NotVx1 = BinVx1.toInt();
+	delay(5000);
 
-long stillNotVx1 = map(NotVx1, 65536, 0, 20000);
+	typedef union VELOCITYX2 {
+		uint8_t DxV2_8[2];
+		uint16_t DxV2_16;
+	};
 
-long almostVx1 = stillNotVx1 * 9.8;
+	VELOCITYX2 velocityx2;
+	
+	Wire.write(0x28);
+	Wire.requestFrom(_address, 1);
+	velocityx2.DxV2_8[0] = Wire.read();
+	
+	Wire.write(0x28);
+	Wire.requestFrom
 
-delay(5000);
+	String BinVx2 = String(velocityx1.DxV2_16);
 
-typedef union VELOCITYX2 {
-	uint8_t DxV2_8[2];
-	uint16_t DxV2_16;
-};
+	long NotVx2 = BinVx2.toInt(); 
+	long stillNotVx2 = map(NotVx2, 0, 65536, 0, 20000);
+	float almostVx2 = stillNotVx2 * 9.8;
+	float VelocityX = InitalVelocityX + (((almostVx2 + almostVx1) / 2) * 5);
+	float InitalVelocityX = VelocityX;
 
-VELOCITYX2 velocityx2;
+	Wire.endTransmission();
 
-velocityx2.DxV2_8[0] = Wire.write(byte(0x28));
-velocityx2.DxV2_8[1] = Wire.write(byte(0x29));
-
-String BinVx2 = String(velocityx1.DxV2_16);
-
-long NotVx2 = BinVx2.toInt(); 
-long stillNotVx2 = map(NotVx2, 0, 65536, 0, 20000);
-float almostVx2 = stillNotVx2 * 9.8;
-float VelocityX = InitalVelocityX + (((almostVx2 + almostVx1) / 2) * 5);
-float InitalVelocityX = VelocityX;
-
-Wire.endTransmission();
-
-return VelocityX;
+	return VelocityX;
 }
 
 void ProtoLSM6DSOXLib :: getVy(){
