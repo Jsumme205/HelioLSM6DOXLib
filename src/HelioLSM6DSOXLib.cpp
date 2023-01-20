@@ -436,19 +436,20 @@ void ProtoLSM6DSOXLib :: readTempF() {
 }
 
 void ProtoLSM6DSOXLib :: readTempC() {
-
-	Wire.beginTransmission(_address);
-	Wire.requestFrom(_address, 0x02);
-
 	typedef union TEMPC {
 		uint8_t DtC_8[2];
 		uint16_t DtC_16; 
 	};
 
 	TEMPC tempc;
-
-	tempc.DtC_8[0] = Wire.write(byte(OUT_TEMP_L));
-	tempc.DtC_8[1] = Wire.write(byte(OUT_TEMP_H));
+	Wire.beginTransmission(_address)
+	Wire.write(OUT_TEMP_L);
+	Wire.requestFrom(_address, 1);
+	tempc.DtC_8[0] = Wire.read();
+	
+	Wire.write(OUT_TEMP_H);
+	Wire.requestFrom(_address, 1);
+	tempc.DtC_8[1] = Wire.read();
 
 	String BinTc = String(tempc.DtC_16);
 
@@ -482,6 +483,19 @@ void ProtoLSM6DSOXLib :: getTime() {
 	Wire.beginTransmission(_address);
 	Wire.write(TIMESTAMP0);
 	Wire.requestFrom(_address, 1);
+	combo.data_8[0] = Wire.read();
+	
+	Wire.write(TIMESTAMP1);
+	Wire.requestFrom(_address, 1);
+	combo.data_8[1] = Wire.read();
+	
+	Wire.write(TIMESTAMP2);
+	Wire.requestFrom(_address, 1);
+	combo.data_8[2] = Wire.read();
+	
+	Wire.write(TIMESTAMP3);
+	Wire.requestFrom(_address, 1);
+	combo.data_8[3] = Wire.read();
 	
 
 	String unix_time = String(combo.data_32);
@@ -495,12 +509,12 @@ void ProtoLSM6DSOXLib :: getTime() {
 	#define secondsInHour 3600
 	#define secondsInMinute 60
 
-	int newValY = UT - secondsInYear;
-	int newValL = newValY - secondsInLeap;
-	int newValM = newValY - secondsInMonth;
-	int newValD = newValM - secondsInDay;
-	int newValH = newValD - secondsInHour;
-	int newValS = newValD - secondsInMinute;
+	uint32_t newValY = UT - secondsInYear;
+	uint32_t newValL = newValY - secondsInLeap;
+	uint32_t newValM = newValY - secondsInMonth;
+	uint32_t newValD = newValM - secondsInDay;
+	uint32_t newValH = newValD - secondsInHour;
+	uint32_t newValS = newValD - secondsInMinute;
 
 	int yearsPassed = 0;
 	int monthsPassed = 0;
@@ -539,7 +553,7 @@ void ProtoLSM6DSOXLib :: getTime() {
 
 	}
 
-for (newValD > 0 && secondsInDay > newValD; secondsInHour <= newValD; newValD - secondsInHour) {
+	for (newValD > 0 && secondsInDay > newValD; secondsInHour <= newValD; newValD - secondsInHour) {
 		int hoursPassed = 0;
 		int newValH = newValD - secondsInHour;
 		hoursPassed++;
@@ -579,24 +593,35 @@ void ProtoLSM6DSOXLib :: setTimeZone(int TimeZone) {
 }
 
 void ProtoLSM6DSOXLib :: getTimeRaw(){
-
-	Wire.beginTransmission(_address);	
-	Wire.requestFrom(_address, 0x04);
-
 	typedef union RAWTIME {
-		uint32_t rawTime_32;
 		uint8_t rawTime_8[4];
+		uint32_t rawTime_32;
 	};
 
 	RAWTIME rawTime;
-	rawTime.rawTime_8[0] = Wire.write(byte(TIMESTAMP0));
-	rawTime.rawTime_8[1] = Wire.write(byte(TIMESTAMP1));
-	rawTime.rawTime_8[2] = Wire.write(byte(TIMESTAMP2));
-	rawTime.rawTime_8[3] = Wire.write(byte(TIMESTAMP3));
+	Wire.beginTransmission(_address);
+	Wire.write(TIMESTAMP0);
+	Wire.requestFrom(_address, 1);
+	rawTime.rawTime_8[0] = Wire.read();
+	
+	Wire.write(TIMESTAMP1);
+	Wire.requestFrom(_address, 1);
+	rawTime.rawTime_8[1] = Wire.read();
+	
+	Wire.write(TIMESTAMP2);
+	Wire.requestFrom(_address, 1);
+	rawTime.rawTime_8[2] = Wire.read();
+	
+	Wire.write(TIMESTAMP3);
+	Wire.requestFrom(_address, 1);
+	rawTime.rawTime_8[3] = Wire.read();
+	
 
 	String RaTime = String(rawTime.rawTime_32);
 
 	long ratime = RaTime.toInt();
 
+	Wire.endTransmission();
+	
 	return ratime;
 }
