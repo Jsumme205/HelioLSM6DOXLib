@@ -418,6 +418,11 @@ void ProtoLSM6DSOXLib :: readTempF() {
 	Wire.beginTransmission(_address);
 	Wire.write(OUT_TEMP_L);
 	Wire.requestFrom(_address, 1);
+	tempf.DtF_8[0] = Wire.read();
+	
+	Wire.write(OUT_TEMP_H);
+	Wire.requestFrom(_address, 1);
+	tempf.DtF_8[1] = Wire.read();
 
 	String BinTf = String(tempf.DtF_16);
 
@@ -457,50 +462,27 @@ void ProtoLSM6DSOXLib :: readTempC() {
 // FIFO stats are on page 38
 void ProtoLSM6DSOXLib :: GetFIFOStat() {
 	Wire.beginTransmission(_address);
-	Wire.requestFrom(_address, 0x01);
-	int FIFONum = 0;
-	if (sizeof(Wire.write(byte(FIFO_STATUS1))) >= 7) {
-		FIFONum ++;
-	}
-
-	Wire.endTransmission();
-
-	return FIFONum;
+	Wire.write(FIFO_STATUS1);
+	Wire.requestFrom(_address, 1);
+	
+	byte FIFOSTAT = Wire.read();
+	int(FIFOSTAT);
+	
+	return FIFOSTAT;
 }
 
-void ProtoLSM6DSOXLib :: GetFIFOStat2(int THRESH) {
-	Wire.beginTransmission(_address);
-	Wire.requestFrom(_address, 0x01);
-	int FIFONum2 = 0;
-	bool FIFOSt;
-	if (sizeof(Wire.write(byte(FIFO_STATUS2))) >= 7) {
-		FIFONum2 ++;
-		FIFOSt = false;
-	}
-	else if (FIFONum2 > THRESH) {
-		FIFOSt = true;
-	}
-
-	_thresh = THRESH;
-	Wire.endTransmission();
-
-	return FIFOSt;
-}
 // page 39 gives info on connections
 void ProtoLSM6DSOXLib :: getTime() {
-	Wire.beginTransmission(_address);
-	Wire.requestFrom(_address, 0x04);
-
 	typedef union COMBO {
-		uint32_t data_32;
 		uint8_t data_8[4];
+		uint32_t data_32;
 	};
 
 	COMBO combo;
-	combo.data_8[0] = Wire.write(byte(TIMESTAMP0));
-	combo.data_8[1] = Wire.write(byte(TIMESTAMP1));
-	combo.data_8[2] = Wire.write(byte(TIMESTAMP2));
-	combo.data_8[3] = Wire.write(byte(TIMESTAMP3));
+	Wire.beginTransmission(_address);
+	Wire.write(TIMESTAMP0);
+	Wire.requestFrom(_address, 1);
+	
 
 	String unix_time = String(combo.data_32);
 
